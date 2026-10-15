@@ -1,9 +1,10 @@
 -- =============================================================================
--- Retails Sales and Inventory Management System
+-- Retail Sales and Inventory Management System
+-- Database entities (schema)
 -- =============================================================================
 
 DROP TABLE IF EXISTS
-    payment, 
+    payment,
     sale_detail, sale,
     inventory_transfer_detail, inventory_transfer, inventory_stock, inventory,
     product_category, product,
@@ -117,18 +118,18 @@ CREATE TABLE supplier (
     address                     VARCHAR(100) NOT NULL,
     city                        INT NOT NULL REFERENCES city (id),
     created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP     
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE store (
     id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     store_number                VARCHAR(20) NOT NULL UNIQUE,
     name                        VARCHAR(100) NOT NULL,
-    email                       VARCHAR(100) NOT NULL UNIQUE,      
+    email                       VARCHAR(100) NOT NULL UNIQUE,
     address                     VARCHAR(100) NOT NULL,
     city                        INT NOT NULL REFERENCES city (id),
     created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =============================================================================
@@ -136,65 +137,68 @@ CREATE TABLE store (
 -- =============================================================================
 
 CREATE TABLE "user" (
-    id                           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    document_number              VARCHAR(20) NOT NULL UNIQUE,
-    document_type                INT NOT NULL REFERENCES document_type (id),
-    user_type                    INT NOT NULL REFERENCES user_type (id),
-    first_name                   VARCHAR(50) NOT NULL,
-    middle_name                  VARCHAR(50),
-    first_lastname               VARCHAR(50) NOT NULL,
-    second_lastname              VARCHAR(50),
-    email                        VARCHAR(100) NOT NULL UNIQUE,
-    address                      VARCHAR(100) NOT NULL,
-    description                  VARCHAR(200) NOT NULL UNIQUE,
-    created_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP     
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    document_number             VARCHAR(20) NOT NULL UNIQUE,
+    document_type               INT NOT NULL REFERENCES document_type (id),
+    user_type                   INT NOT NULL REFERENCES user_type (id),
+    first_name                  VARCHAR(50) NOT NULL,
+    middle_name                 VARCHAR(50),
+    first_lastname              VARCHAR(50) NOT NULL,
+    second_lastname             VARCHAR(50),
+    email                       VARCHAR(100) NOT NULL UNIQUE,
+    address                     VARCHAR(100) NOT NULL,
+    description                 VARCHAR(200) NOT NULL,
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- A user can be at most one customer
 CREATE TABLE customer (
     id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_data                   INT NOT NULL REFERENCES "user" (id),
-    loyalty_points              INT NOT NULL DEFAULT 0,
+    user_data                   INT NOT NULL UNIQUE REFERENCES "user" (id),
+    loyalty_points              INT NOT NULL DEFAULT 0 CHECK (loyalty_points >= 0),
     created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP   
-); 
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+-- A user can be at most one employee
 CREATE TABLE employee (
     id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_data                   INT NOT NULL REFERENCES "user" (id),
-    number                      VARCHAR(10) NOT NULL UNIQUE,    
+    user_data                   INT NOT NULL UNIQUE REFERENCES "user" (id),
+    number                      VARCHAR(10) NOT NULL UNIQUE,
     role                        INT NOT NULL REFERENCES role (id),
     store                       INT NOT NULL REFERENCES store (id),
     created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP       
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================================
+-- =============================================================================
 -- Phones (association)
--- ============================================================================
+-- An owner can have many phones, but a phone belongs to only one owner
+-- =============================================================================
 
-CREATE TABLE user_phone(
+CREATE TABLE user_phone (
     id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id                     INT NOT NULL UNIQUE REFERENCES "user" (id),
-    phone_id                    INT NOT NULL UNIQUE REFERENCES phone(id),
-    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE supplier_phone(
-    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    supplier_id                 INT NOT NULL UNIQUE REFERENCES supplier (id),
-    phone_id                    INT NOT NULL UNIQUE REFERENCES phone (id),  
-    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE store_phone(
-    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    store_id                    INT NOT NULL UNIQUE REFERENCES store (id),
+    user_id                     INT NOT NULL REFERENCES "user" (id),
     phone_id                    INT NOT NULL UNIQUE REFERENCES phone (id),
     created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP    
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE supplier_phone (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    supplier_id                 INT NOT NULL REFERENCES supplier (id),
+    phone_id                    INT NOT NULL UNIQUE REFERENCES phone (id),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE store_phone (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    store_id                    INT NOT NULL REFERENCES store (id),
+    phone_id                    INT NOT NULL UNIQUE REFERENCES phone (id),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =============================================================================
@@ -213,52 +217,61 @@ CREATE TABLE product (
     updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Many-to-many: a product can have many categories and a category many products,
+-- but the same pair cannot be repeated
 CREATE TABLE product_category (
     id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    product_id                  INT NOT NULL UNIQUE REFERENCES product (id),
-    category_id                 INT NOT NULL UNIQUE REFERENCES category (id),
+    product_id                  INT NOT NULL REFERENCES product (id),
+    category_id                 INT NOT NULL REFERENCES category (id),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (product_id, category_id)
+);
+
+-- =============================================================================
+-- Inventory
+-- =============================================================================
+
+-- One inventory per store
+CREATE TABLE inventory (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    store                       INT NOT NULL UNIQUE REFERENCES store (id),
     created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================================
--- Inventory
--- =============================================================================
-
-CREATE TABLE inventory (
-    id                           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    store                        INT NOT NULL UNIQUE REFERENCES store (id),
-    created_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- One row per product in each inventory
+CREATE TABLE inventory_stock (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    inventory                   INT NOT NULL REFERENCES inventory (id),
+    product                     INT NOT NULL REFERENCES product (id),
+    quantity_available          INT NOT NULL CHECK (quantity_available >= 0),
+    minimum_stock               INT NOT NULL CHECK (minimum_stock >= 0),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (inventory, product)
 );
 
-CREATE TABLE inventory_stock(
-    id                             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    inventory                      INT NOT NULL UNIQUE REFERENCES inventory (id),
-    product                        INT NOT NULL REFERENCES product (id),
-    quantity_available             INT NOT NULL,
-    minimum_stock                  INT NOT NULL,
-    created_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP             
+CREATE TABLE inventory_transfer (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    type                        INT NOT NULL REFERENCES type_inventory_transfer (id),
+    origin_inventory            INT NOT NULL REFERENCES inventory (id),
+    destination_inventory       INT NOT NULL REFERENCES inventory (id),
+    employee_id                 INT NOT NULL REFERENCES employee (id),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (origin_inventory <> destination_inventory)
 );
 
-CREATE TABLE inventory_transfer(
-    id                            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    type                          INT NOT NULL REFERENCES type_inventory_transfer (id),
-    origin_inventory              INT NOT NULL REFERENCES inventory (id),
-    destination_inventory         INT NOT NULL REFERENCES inventory (id),
-    employee_id                   INT NOT NULL REFERENCES employee (id),
-    created_at                    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                    TIMESTAMP DEFAULT CURRENT_TIMESTAMP   
-);
-
-CREATE TABLE inventory_transfer_detail(
-    id                             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    inventory_transfer_id          INT NOT NULL REFERENCES inventory_transfer (id),
-    product                        INT NOT NULL REFERENCES product (id),
-    movement_quantity              INT NOT NULL,              
-    created_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
+-- A product appears only once in each transfer
+CREATE TABLE inventory_transfer_detail (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    inventory_transfer_id       INT NOT NULL REFERENCES inventory_transfer (id),
+    product                     INT NOT NULL REFERENCES product (id),
+    movement_quantity           INT NOT NULL CHECK (movement_quantity > 0),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (inventory_transfer_id, product)
 );
 
 -- =============================================================================
@@ -266,38 +279,42 @@ CREATE TABLE inventory_transfer_detail(
 -- =============================================================================
 
 CREATE TABLE sale (
-    id                           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    date                         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    customer                     INT NOT NULL REFERENCES customer (id),
-    employee                     INT NOT NULL REFERENCES employee (id),
-    store                        INT NOT NULL REFERENCES store (id),
-    created_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP   
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    date                        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    customer                    INT NOT NULL REFERENCES customer (id),
+    employee                    INT NOT NULL REFERENCES employee (id),
+    store                       INT NOT NULL REFERENCES store (id),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE sale_detail(
-    id                           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    sale_detail                  INT NOT NULL REFERENCES sale (id),
-    product_id                   INT NOT NULL REFERENCES product (id),
-    quantity                     INT NOT NULL,
-    discount                     NUMERIC(10,2) NOT NULL,
-    created_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- A product appears only once in each sale (use quantity for more units)
+-- discount is an amount in USD for the line
+CREATE TABLE sale_detail (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sale_detail                 INT NOT NULL REFERENCES sale (id),
+    product_id                  INT NOT NULL REFERENCES product (id),
+    quantity                    INT NOT NULL CHECK (quantity > 0),
+    discount                    NUMERIC(10,2) NOT NULL CHECK (discount >= 0),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (sale_detail, product_id)
 );
 
--- ============================================================================
+-- =============================================================================
 -- Payment
+-- A sale can have several payments (for example a declined one and a retry)
 -- =============================================================================
 
-CREATE TABLE payment(
-    id                              INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    sale_id                         INT NOT NULL REFERENCES sale (id),
-    status                          INT NOT NULL REFERENCES payment_status (id),
-    method                          INT NOT NULL REFERENCES payment_method (id),
-    discount                        NUMERIC(10,2) NOT NULL CHECK (discount >= 0),
-    tax                             NUMERIC(10,2) NOT NULL CHECK (tax >= 0),
-    subtotal                        NUMERIC(10,2) NOT NULL CHECK (subtotal >= 0),
-    total                           NUMERIC(10,2) NOT NULL CHECK (total >= 0),
-    created_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP         
+CREATE TABLE payment (
+    id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sale_id                     INT NOT NULL REFERENCES sale (id),
+    status                      INT NOT NULL REFERENCES payment_status (id),
+    method                      INT NOT NULL REFERENCES payment_method (id),
+    discount                    NUMERIC(10,2) NOT NULL CHECK (discount >= 0),
+    tax                         NUMERIC(10,2) NOT NULL CHECK (tax >= 0),
+    subtotal                    NUMERIC(10,2) NOT NULL CHECK (subtotal >= 0),
+    total                       NUMERIC(10,2) NOT NULL CHECK (total >= 0),
+    created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
