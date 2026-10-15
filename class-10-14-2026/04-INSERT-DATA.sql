@@ -1,6 +1,7 @@
 -- =============================================================================
--- Retails Sales and Inventory Management System
--- INSERT statements
+-- Retail Sales and Inventory Management System
+-- INSERT statements (small example dataset, all money values in USD)
+-- Run after 01_schema.sql
 -- =============================================================================
 
 -- =============================================================================
@@ -9,11 +10,11 @@
 
 -- Country
 INSERT INTO country (
-    name, 
+    name,
     iso2_code
 )
 VALUES (
-    'Colombia', 
+    'Colombia',
     'CO'
 );
 
@@ -24,7 +25,7 @@ INSERT INTO department (
     name,
     country
 )
-VALUES 
+VALUES
     ('Amazonas', 1),
     ('Antioquia', 1),
     ('Arauca', 1),
@@ -40,7 +41,7 @@ INSERT INTO city (
 )
 VALUES
     ('Barranquilla', 4),
-    ('Cartagena', 4);
+    ('Cartagena', 5);
 
 SELECT * FROM city;
 
@@ -53,7 +54,7 @@ INSERT INTO user_type (
     type,
     description
 )
-VALUES 
+VALUES
     (
         'Employee',
         'Store employees'
@@ -70,10 +71,15 @@ INSERT INTO role (
     name,
     description
 )
-VALUES (
-    'Salesperson',
-    'Store employees who support customers '
-);
+VALUES
+    (
+        'Salesperson',
+        'Store employees who support customers'
+    ),
+    (
+        'Store Manager',
+        'Runs daily store operations and supervises the team'
+    );
 
 SELECT * FROM role;
 
@@ -96,7 +102,6 @@ VALUES
     ('Debit Card'),
     ('Cash');
 
-
 SELECT * FROM payment_method;
 
 -- Payment status
@@ -111,12 +116,11 @@ VALUES
 
 SELECT * FROM payment_status;
 
-
 -- Inventory transfer type
 INSERT INTO type_inventory_transfer (
     name
 )
-VALUES 
+VALUES
     ('Inbound'),
     ('Outbound');
 
@@ -126,7 +130,7 @@ SELECT * FROM type_inventory_transfer;
 INSERT INTO category (
     name
 )
-VALUES 
+VALUES
     ('Footwear'),
     ('Life style');
 
@@ -136,13 +140,15 @@ SELECT * FROM category;
 INSERT INTO phone (
     number
 )
-
-VALUES 
+VALUES
     ('319-907-4521'),
     ('+57 321 546 4321'),
     ('3145435687'),
     ('6024567843'),
-    ('602 231 4322');
+    ('602 231 4322'),
+    ('605 345 6789'),
+    ('605 456 7890'),
+    ('+57 315 987 6543');
 
 SELECT * FROM phone;
 
@@ -176,7 +182,7 @@ INSERT INTO store (
     address,
     city
 )
-VALUES 
+VALUES
     (
         'AD-032',
         'Adidas Store Cartagena',
@@ -191,7 +197,6 @@ VALUES
         'Street 32 - 53 -17',
         1
     );
-
 
 SELECT * FROM store;
 
@@ -212,7 +217,7 @@ INSERT INTO "user" (
     address,
     description
 )
-VALUES 
+VALUES
 (
     '10314567843',
     2,
@@ -220,7 +225,7 @@ VALUES
     'Michael',
     'Stuart',
     'Jackson',
-    '',
+    NULL,
     'michael.jackson@adidas.com.co',
     'Avenue 34 # 12 -90',
     'Sales employee'
@@ -230,9 +235,9 @@ VALUES
     1,
     2,
     'Bruce',
-    '',
+    NULL,
     'Wayne',
-    '',
+    NULL,
     'bruce.wayne@wayneindustries.com',
     'Baticave',
     'Super customer'
@@ -267,6 +272,46 @@ VALUES (
 );
 
 SELECT * FROM employee;
+
+-- =============================================================================
+-- Phones (association)
+-- An owner can have several phones, but each phone belongs to only one owner
+-- =============================================================================
+
+-- User phone
+INSERT INTO user_phone (
+    user_id,
+    phone_id
+)
+VALUES
+    (1, 1),
+    (1, 3),
+    (2, 2);
+
+SELECT * FROM user_phone;
+
+-- Supplier phone
+INSERT INTO supplier_phone (
+    supplier_id,
+    phone_id
+)
+VALUES
+    (1, 4),
+    (1, 5);
+
+SELECT * FROM supplier_phone;
+
+-- Store phone
+INSERT INTO store_phone (
+    store_id,
+    phone_id
+)
+VALUES
+    (1, 6),
+    (1, 8),
+    (2, 7);
+
+SELECT * FROM store_phone;
 
 -- =============================================================================
 -- Product
@@ -310,13 +355,16 @@ VALUES
 SELECT * FROM product;
 
 -- Product category
+-- A product can have several categories (product 1 has two)
 INSERT INTO product_category (
     product_id,
     category_id
 )
 VALUES
     (1, 1),
-    (2, 2);  
+    (1, 2),
+    (2, 2),
+    (3, 1);
 
 SELECT * FROM product_category;
 
@@ -324,7 +372,7 @@ SELECT * FROM product_category;
 -- Inventory
 -- =============================================================================
 
--- Inventory 
+-- Inventory (one per store)
 INSERT INTO inventory (
     store
 )
@@ -335,6 +383,7 @@ VALUES
 SELECT * FROM inventory;
 
 -- Inventory stock
+-- Each inventory can now hold several products (one row per inventory and product)
 INSERT INTO inventory_stock (
     inventory,
     product,
@@ -343,7 +392,11 @@ INSERT INTO inventory_stock (
 )
 VALUES
     (1, 1, 25, 5),
-    (2, 2, 40, 10);
+    (1, 2, 30, 10),
+    (1, 3, 18, 5),
+    (2, 1, 12, 5),
+    (2, 2, 40, 10),
+    (2, 3, 20, 5);
 
 SELECT * FROM inventory_stock;
 
@@ -361,6 +414,7 @@ VALUES
 SELECT * FROM inventory_transfer;
 
 -- Inventory transfer detail
+-- A product appears only once in each transfer
 INSERT INTO inventory_transfer_detail (
     inventory_transfer_id,
     product,
@@ -391,6 +445,8 @@ VALUES
 SELECT * FROM sale;
 
 -- Sale detail
+-- A product appears only once in each sale (use quantity for more units)
+-- discount is an amount in USD for the line
 INSERT INTO sale_detail (
     sale_detail,
     product_id,
