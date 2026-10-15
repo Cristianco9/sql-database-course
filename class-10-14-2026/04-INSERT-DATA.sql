@@ -267,3 +267,159 @@ VALUES (
 );
 
 SELECT * FROM employee;
+
+-- =============================================================================
+-- Product
+-- =============================================================================
+
+-- Product
+INSERT INTO product (
+    sku,
+    name,
+    description,
+    details,
+    supplier_id,
+    unit_price
+)
+VALUES
+    (
+        'ADI-FTW-001',
+        'Ultraboost Light',
+        'Running shoes with Light BOOST midsole for daily training',
+        '{"color": "Core Black", "material": "Primeknit", "weight": "234"}',
+        1,
+        149.99
+    ),
+    (
+        'ADI-LST-002',
+        'Essentials Hoodie',
+        'Cotton-blend hoodie with kangaroo pocket for everyday wear',
+        '{"color": "Grey Heather", "material": "Cotton/Polyester"}',
+        1,
+        89.99
+    ),
+    (
+        'ADI-FTW-003',
+        'Samba OG',
+        'Classic low-profile sneakers with leather upper and gum sole',
+        '{"color": "White/Black", "material": "Leather"}',
+        1,
+        119.99
+    );
+
+SELECT * FROM product;
+
+-- Product category
+INSERT INTO product_category (
+    product_id,
+    category_id
+)
+VALUES
+    (1, 1),
+    (2, 2);  
+
+SELECT * FROM product_category;
+
+-- =============================================================================
+-- Inventory
+-- =============================================================================
+
+-- Inventory 
+INSERT INTO inventory (
+    store
+)
+VALUES
+    (1),
+    (2);
+
+SELECT * FROM inventory;
+
+-- Inventory stock
+INSERT INTO inventory_stock (
+    inventory,
+    product,
+    quantity_available,
+    minimum_stock
+)
+VALUES
+    (1, 1, 25, 5),
+    (2, 2, 40, 10);
+
+SELECT * FROM inventory_stock;
+
+-- Inventory transfer
+INSERT INTO inventory_transfer (
+    type,
+    origin_inventory,
+    destination_inventory,
+    employee_id
+)
+VALUES
+    (1, 2, 1, 1),
+    (2, 1, 2, 1);
+
+SELECT * FROM inventory_transfer;
+
+-- Inventory transfer detail
+INSERT INTO inventory_transfer_detail (
+    inventory_transfer_id,
+    product,
+    movement_quantity
+)
+VALUES
+    (1, 1, 10),
+    (1, 3, 5),
+    (2, 2, 8);
+
+SELECT * FROM inventory_transfer_detail;
+
+-- =============================================================================
+-- Sale
+-- =============================================================================
+
+-- Sale
+INSERT INTO sale (
+    date,
+    customer,
+    employee,
+    store
+)
+VALUES
+    ('2026-10-10 14:30:00', 1, 1, 1),
+    ('2026-10-12 11:15:00', 1, 1, 1);
+
+SELECT * FROM sale;
+
+-- Sale detail
+INSERT INTO sale_detail (
+    sale_detail,
+    product_id,
+    quantity,
+    discount
+)
+VALUES
+    (1, 1, 1, 0.00),
+    (1, 3, 2, 10.00),
+    (2, 2, 3, 0.00);
+
+SELECT * FROM sale_detail;
+
+-- =============================================================================
+-- Payment
+-- =============================================================================
+
+-- Payment (total = subtotal - discount + 19% tax on the discounted amount)
+INSERT INTO payment (
+    sale_id,
+    status,
+    method,
+    discount,
+    tax,
+    subtotal,
+    total
+)
+VALUES
+    (1, 4, 1, 10.00, 72.19, 389.97, 452.16),
+    (2, 4, 3,  0.00, 51.29, 269.97, 321.26);
+
+SELECT * FROM payment;
