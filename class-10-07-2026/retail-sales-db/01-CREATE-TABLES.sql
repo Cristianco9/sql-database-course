@@ -154,6 +154,7 @@ CREATE TABLE "user" (
 CREATE TABLE customer (
     id                          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_data                   INT NOT NULL REFERENCES "user" (id),
+    loyalty_points              INT NOT NULL DEFAULT 0,
     created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP   
 ); 
