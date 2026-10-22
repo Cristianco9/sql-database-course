@@ -7,7 +7,8 @@ in **PostgreSQL**.
 
 The course goes from the theory of relational databases and normalization 
 (1NF, 2NF, 3NF), through implementing the schema with Docker and PostgreSQL, 
-to loading data, altering tables, and writing SQL queries.
+to loading data, altering tables, writing SQL queries, and modifying data 
+with `UPDATE`, `DELETE`, and `TRUNCATE`.
 
 ---
 
@@ -19,6 +20,7 @@ to loading data, altering tables, and writing SQL queries.
 - [Getting Started](#getting-started)
 - [Database Model](#database-model)
 - [Practice Queries](#practice-queries)
+- [Data Manipulation Practice](#data-manipulation-practice)
 - [Class Resources](#class-resources)
 - [Security Note](#security-note)
 - [License](#license)
@@ -38,6 +40,7 @@ The class designs the replacement step by step:
 3. Draw the ERD / relational diagram.
 4. Implement it in PostgreSQL running in Docker.
 5. Load data, alter tables, add indexes, and answer business questions with SQL.
+6. Modify data safely with `UPDATE`, `DELETE`, and `TRUNCATE`, including transactions and `ROLLBACK`.
 
 The full project statement (business rules, phases, deliverables, and analysis questions) 
 is in [`class-09-09-2026/project-introduction.md`](class-09-09-2026/project-introduction.md).
@@ -54,7 +57,7 @@ is in [`class-09-09-2026/project-introduction.md`](class-09-09-2026/project-intr
 | 2026-09-30 | [`class-09-30-2026`](class-09-30-2026) | Docker and the PostgreSQL environment | `docker-installation-tutorial.md`, `docker-compose.yml`, `.env`, first `01-CREATE-TABLES.sql` (geography and catalog tables) |
 | 2026-10-07 | [`class-10-07-2026`](class-10-07-2026/retail-sales-db) | Complete schema and indexes | `01-CREATE-TABLES.sql`, `02-INDEXES.sql` |
 | 2026-10-14 | [`class-10-14-2026`](class-10-14-2026) | `ALTER TABLE` and data insertion | `03-ALTER-TABLE.sql`, `04-INSERT-DATA.sql` |
-| 2026-10-21 | [`class-10-21-2026`](class-10-21-2026) | Full dataset and SQL practice | `06-INSERT-DATASET.sql`, `queries.md` (`05-INSERT-PHONES.sql` is currently empty) |
+| 2026-10-21 | [`class-10-21-2026`](class-10-21-2026) | Full dataset, SQL queries, and data manipulation (`UPDATE`, `DELETE`, `TRUNCATE`) | `05-INSERT-PHONES.sql`, `06-INSERT-DATASET.sql`, `07-TRUNCADE.sql`, `08-UPDATE.sql`, `09-DELETE.sql`, `queries.md` |
 
 > The `.drawio` files can be opened and edited with [draw.io (diagrams.net)](https://app.diagrams.net/).
 
@@ -70,8 +73,9 @@ is in [`class-09-09-2026/project-introduction.md`](class-09-09-2026/project-intr
 
 ## Getting Started
 
-The commands below use the latest lesson folder, which contains the complete schema. 
-All commands are run from the repository root.
+The steps below use the latest version of each script. The Docker commands are 
+run from `class-09-30-2026/retail-sales-db/`, and the SQL scripts can be run from 
+pgAdmin or `psql`, in the order shown.
 
 ### 1. Start PostgreSQL and pgAdmin
 
@@ -95,8 +99,6 @@ Database name, user, password, and ports come from the `.env` file in that folde
 Run the full schema (28 tables). It starts with `DROP TABLE IF EXISTS ... CASCADE`, 
 so it can be re-run to reset the database.
 
-# from class-09-30-2026/retail-sales-db
-
 [01-CREATE-TABLES.sql](class-10-07-2026/retail-sales-db/01-CREATE-TABLES.sql)
 
 ### 3. Add the indexes
@@ -105,7 +107,14 @@ so it can be re-run to reset the database.
 
 ### 4. Load the data
 
-[06-INSERT-DATASET.sql](class-10-21-2026/06-INSERT-DATASET.sql)
+Choose **one** dataset on an empty database (both assume IDs start at 1):
+
+- **Full dataset (recommended for practice):** [06-INSERT-DATASET.sql](class-10-21-2026/06-INSERT-DATASET.sql)
+- **Small example dataset:** [04-INSERT-DATA.sql](class-10-14-2026/04-INSERT-DATA.sql), followed by [05-INSERT-PHONES.sql](class-10-21-2026/05-INSERT-PHONES.sql)
+
+> `05-INSERT-PHONES.sql` adds a new customer, supplier, and store with their phones using 
+> fixed IDs (for example, user 3 and phones 9 to 14). It is written to run right after 
+> the small dataset, **not** after `06-INSERT-DATASET.sql`.
 
 ### 5. Practice
 
@@ -116,7 +125,9 @@ docker exec -it retail-sales-db psql -U "$DB_USER" -d "$DB_NAME"
 ```
 
 Then work through [`class-10-21-2026/queries.md`](class-10-21-2026/queries.md). 
-The `ALTER TABLE` exercises are in [`class-10-14-2026/03-ALTER-TABLE.sql`](class-10-14-2026/03-ALTER-TABLE.sql).
+The `ALTER TABLE` exercises are in [`class-10-14-2026/03-ALTER-TABLE.sql`](class-10-14-2026/03-ALTER-TABLE.sql), 
+and the `UPDATE`, `DELETE`, and `TRUNCATE` examples are described in 
+[Data Manipulation Practice](#data-manipulation-practice).
 
 ### 6. Stop the environment
 
@@ -171,6 +182,25 @@ on the retail database, in three levels:
 | Beginner | Single-table queries, filtering, sorting, basic aggregates | 1.1 - 1.10 |
 | Intermediate | Joins, `GROUP BY`, `HAVING`, `CASE`, subqueries | 2.1 - 2.10 |
 | Advanced | Revenue reports, window functions, running totals, ranking, stock and transfer analysis | 3.1 - 3.10 |
+
+---
+
+## Data Manipulation Practice
+
+Three scripts in [`class-10-21-2026`](class-10-21-2026) teach how to change data, each with 10 commented examples:
+
+| Script | Statement | Topics covered |
+| ------ | --------- | -------------- |
+| [`08-UPDATE.sql`](class-10-21-2026/08-UPDATE.sql) | `UPDATE` | One row and many rows, several columns, arithmetic on the current value, `CASE`, `NULL` and `COALESCE`, `UPDATE ... FROM`, subqueries, `RETURNING`, transactions |
+| [`09-DELETE.sql`](class-10-21-2026/09-DELETE.sql) | `DELETE` | Primary key, comparison operators, `IN`, `BETWEEN`, `LIKE`, deleting child rows before parents, subqueries, `DELETE ... USING`, `RETURNING`, transactions |
+| [`07-TRUNCADE.sql`](class-10-21-2026/07-TRUNCADE.sql) | `TRUNCATE` | `RESTART IDENTITY`, `CASCADE`, several tables at once, transactions and `SAVEPOINT`, resetting the whole database |
+
+How to run them:
+
+- Load the **full dataset** first ([`06-INSERT-DATASET.sql`](class-10-21-2026/06-INSERT-DATASET.sql)). The examples use specific IDs and row counts from that dataset.
+- Run the examples **one at a time**, checking each result with the `SELECT` statements included. Examples marked with `BEGIN` ... `ROLLBACK` can be repeated safely.
+- Several examples permanently change data, and later examples can depend on earlier ones. If something looks wrong, run `07-TRUNCADE.sql` (Example 6, which empties the whole database), then reload `06-INSERT-DATASET.sql`.
+- These scripts are **destructive**. Use them only on the local course database, never on a real one.
 
 ---
 
