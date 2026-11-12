@@ -58,6 +58,7 @@ is in [`class-09-09-2026/project-introduction.md`](class-09-09-2026/project-intr
 | 2026-10-07 | [`class-10-07-2026`](class-10-07-2026/retail-sales-db) | Complete schema and indexes | `01-CREATE-TABLES.sql`, `02-INDEXES.sql` |
 | 2026-10-14 | [`class-10-14-2026`](class-10-14-2026) | `ALTER TABLE` and data insertion | `03-ALTER-TABLE.sql`, `04-INSERT-DATA.sql` |
 | 2026-10-21 | [`class-10-21-2026`](class-10-21-2026) | Full dataset, SQL queries, and data manipulation (`UPDATE`, `DELETE`, `TRUNCATE`) | `05-INSERT-PHONES.sql`, `06-INSERT-DATASET.sql`, `07-TRUNCADE.sql`, `08-UPDATE.sql`, `09-DELETE.sql`, `queries.md` |
+| 2026-11-11 | [`class-11-11-2026`](class-11-11-2026) | **TCL** `BEGIN`, `COMMIT`, `ROLLBACK`, `SAVEPOINT` | `10-TCL.sql` |
 
 > The `.drawio` files can be opened and edited with [draw.io (diagrams.net)](https://app.diagrams.net/).
 
