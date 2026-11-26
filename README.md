@@ -10,7 +10,8 @@ The course goes from the theory of relational databases and normalization
 to loading data, altering tables, writing SQL queries, and modifying data
 with `UPDATE`, `DELETE`, and `TRUNCATE`. It also covers transaction control
 with **TCL** and querying data with filtering, sorting, distinct results,
-subqueries, and aggregate functions.
+subqueries, and aggregate functions, followed by intermediate queries with joins,
+grouping, `HAVING`, `CASE`, date functions, and JSON data.
 
 ---
 
@@ -45,6 +46,7 @@ The class designs the replacement step by step:
 5. Load data, alter tables, add indexes, and answer business questions with SQL.
 6. Modify data safely with `UPDATE`, `DELETE`, and `TRUNCATE`, including transactions and `ROLLBACK`.
 7. Use transaction control statements and write queries to retrieve, filter, sort, and summarize business data.
+8. Combine related tables with joins and build business reports with grouping, conditional logic, and subqueries.
 
 The full project statement (business rules, phases, deliverables, and analysis questions)
 is in [`class-09-09-2026/project-introduction.md`](class-09-09-2026/project-introduction.md).
@@ -64,6 +66,7 @@ is in [`class-09-09-2026/project-introduction.md`](class-09-09-2026/project-intr
 | 2026-10-21 | [`class-10-21-2026`](class-10-21-2026) | Full dataset, SQL queries, and data manipulation (`UPDATE`, `DELETE`, `TRUNCATE`) | `05-INSERT-PHONES.sql`, `06-INSERT-DATASET.sql`, `07-TRUNCADE.sql`, `08-UPDATE.sql`, `09-DELETE.sql`, `queries.md` |
 | 2026-11-11 | [`class-11-11-2026`](class-11-11-2026) | **TCL** `BEGIN`, `COMMIT`, `ROLLBACK`, `SAVEPOINT` | `10-TCL.sql` |
 | 2026-11-18 | [`class-11-18-2026`](class-11-18-2026) | SQL querying, filtering, sorting, distinct results, subqueries, and aggregate functions | `12-QUERIES.sql` |
+| 2026-11-25 | [`class-11-25-2026`](class-11-25-2026) | Intermediate queries: joins, `GROUP BY`, `HAVING`, date functions, JSON data, `CASE`, and subqueries | `13-QUERIES-INTERMEDIATE.sql` |
 
 > The `.drawio` files can be opened and edited with [draw.io (diagrams.net)](https://app.diagrams.net/).
 
@@ -134,6 +137,7 @@ Use the practice materials in chronological order:
 
 - [`class-10-21-2026/queries.md`](class-10-21-2026/queries.md) contains the original set of 30 practice questions.
 - [`class-11-18-2026/12-QUERIES.sql`](class-11-18-2026/12-QUERIES.sql) contains additional query examples focused on filtering, sorting, distinct results, subqueries, and aggregate functions.
+- [`class-11-25-2026/13-QUERIES-INTERMEDIATE.sql`](class-11-25-2026/13-QUERIES-INTERMEDIATE.sql) contains 10 intermediate-level queries (2.1 - 2.10) with joins, grouping, conditional logic, and subqueries.
 - The `ALTER TABLE` exercises are in [`class-10-14-2026/03-ALTER-TABLE.sql`](class-10-14-2026/03-ALTER-TABLE.sql).
 - The `UPDATE`, `DELETE`, and `TRUNCATE` examples are described in [Data Manipulation Practice](#data-manipulation-practice).
 - Transaction examples are described in [Transaction Control Language](#transaction-control-language).
@@ -183,7 +187,7 @@ Diagrams for each normalization stage are in the class folders (`RetailDB-1FN.jp
 
 ## Practice Queries
 
-The course includes two sets of query practice material.
+The course includes three sets of query practice material.
 
 ### Original practice set
 
@@ -228,6 +232,42 @@ The examples in the script include:
 > The November 18 script contains the examples listed above. It does not, by itself, define a separate numbered intermediate or advanced exercise set.
 
 Run the statements individually and inspect each result. The examples are intended for query practice and retrieve data; they do not modify table records.
+
+### November 25, 2026 — Intermediate queries
+
+[`class-11-25-2026/13-QUERIES-INTERMEDIATE.sql`](class-11-25-2026/13-QUERIES-INTERMEDIATE.sql) provides 10 intermediate-level queries (2.1 - 2.10) on the retail database. The script demonstrates the following topics:
+
+| Topic | SQL features | Practice focus |
+| ----- | ------------ | -------------- |
+| Combining tables | `INNER JOIN`, `JOIN`, `ON` | Connect related tables through their keys, joining two or more tables in one query |
+| Readable queries and results | Table and column aliases (`AS`) | Shorten table references and give result columns descriptive names |
+| Reserved words | Quoted identifiers (`"user"`) | Query a table whose name is a reserved word in PostgreSQL |
+| Finding unmatched rows | `LEFT JOIN`, `IS NULL` | Find customers who have no related sales (anti-join) |
+| Grouping and summarizing | `GROUP BY`, `COUNT`, `SUM`, `AVG`, `ROUND` | Calculate counts, totals, and rounded averages per group |
+| Filtering groups | `HAVING` | Keep only the groups that meet an aggregate condition |
+| Grouping by date | `DATE_TRUNC`, `TO_CHAR` | Count sales per month and format the month as `YYYY-MM` |
+| JSON data | `->>` | Extract a value as text from the product `details` column and group by it |
+| Conditional logic | `CASE` | Classify products into price tiers |
+| Ordering by an aggregate | `ORDER BY MIN(...)` | Sort the price tiers from cheapest to most expensive |
+| Subqueries | Scalar subquery in `WHERE` | Compare each product price with the average price |
+| Top results | `ORDER BY`, `LIMIT` | Return the 10 most expensive products above the average |
+
+The queries in the script answer the following:
+
+| Query | Business question | Main concepts |
+| ----- | ----------------- | ------------- |
+| 2.1 | Which department does each city belong to? | `INNER JOIN` |
+| 2.2 | In which city and department is each store located? | Multiple joins, aliases |
+| 2.3 | How many products does each supplier provide, and what is their average price? | `COUNT`, `AVG`, `ROUND`, `GROUP BY` |
+| 2.4 | How many payments are in each status, and how much money does each status represent? | `JOIN`, `COUNT`, `SUM`, `GROUP BY` |
+| 2.5 | Which categories contain more than 10 products? | Associative table, `HAVING` |
+| 2.6 | Which customers have never bought anything? | `LEFT JOIN`, `IS NULL` |
+| 2.7 | How many sales were made in each month? | `DATE_TRUNC`, `TO_CHAR`, `GROUP BY` |
+| 2.8 | In which countries are the products manufactured, and how many come from each? | JSON operator `->>`, `GROUP BY` |
+| 2.9 | How many products are Budget (under 30 USD), Standard (30 to under 100 USD), and Premium (100 USD or more)? | `CASE`, `ORDER BY MIN(...)` |
+| 2.10 | Which are the 10 most expensive products that cost more than the average product? | Scalar subquery, `LIMIT` |
+
+Run the statements individually and inspect each result. These queries only retrieve data; they do not modify table records.
 
 ---
 
