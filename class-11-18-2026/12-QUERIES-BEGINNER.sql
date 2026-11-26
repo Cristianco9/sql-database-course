@@ -69,13 +69,13 @@ SELECT DISTINCT document_type
 FROM "user"
 ORDER BY document_type ASC;
 
--- How many sales have we made, and how many different customers bought?
+-- 1.9 How many sales have we made, and how many different customers bought?
 SELECT 	
 	COUNT(*) 					AS total_sales,
 	COUNT(DISTINCT customer) 	AS customers_who_bought
 FROM sale;
 
--- What is the smallest, the largest, the average and the total value of the paid payments?
+-- 1.10 What is the smallest, the largest, the average and the total value of the paid payments?
 SELECT 
 	MIN(total)			AS smallest_payment,
 	MAX(total)			AS largest_payment,
